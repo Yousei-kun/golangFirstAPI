@@ -17,6 +17,7 @@ func main() {
 	router.GET("/students/:id/:name", studentsHandler)
 	router.GET("/query", queryHandler)
 
+	//ROUTENYA YANG INI!
 	router.POST("/students/post", studentsPostHandler)
 
 	router.Run("localhost:8080")
@@ -59,11 +60,15 @@ func queryHandler(context *gin.Context) {
 type StudentInput struct {
 	ID    string      `json:"id" binding:"required"`
 	Name  string      `json:"name" binding:"required"`
-	Email json.Number `json:"email" binding:"required,number"`
+	Score json.Number `json:"score" binding:"required,number"`
 }
+
+//CHECK THIS OUT!!!
 
 func studentsPostHandler(context *gin.Context) {
 	var studentInput StudentInput
+
+	//ERROR: KALO NUMBER DIINPUT STRING, RESPONSENYA 500. MAUNYA 400 + RESPONSE ERROR MESSAGENYA.
 
 	errors := context.ShouldBindJSON(&studentInput)
 	if errors != nil {
@@ -77,6 +82,6 @@ func studentsPostHandler(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{
 		"id":    studentInput.ID,
 		"name":  studentInput.Name,
-		"email": studentInput.Email,
+		"score": studentInput.Score,
 	})
 }
