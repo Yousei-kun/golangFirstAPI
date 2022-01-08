@@ -1,87 +1,38 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
-	"net/http"
+	"golangFirstAPI/handler"
+	"golangFirstAPI/student"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"log"
 )
 
 func main() {
+
+	dsn := "host=localhost user=xcessive password=1010 dbname=student port=5432 sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+	if err != nil {
+		log.Fatal("DB ERROR!")
+	}
+
+	db.AutoMigrate(&student.Student{})
+
 	router := gin.Default()
 
-	router.GET("/", rootHandler)
-	router.GET("/jessica", secondHandler)
-
-	router.GET("/students/:id/:name", studentsHandler)
-	router.GET("/query", queryHandler)
-
-	//ROUTENYA YANG INI!
-	router.POST("/students/post", studentsPostHandler)
+	v1 := router.Group("/v1")
+	v1.GET("/", handler.RootHandler)
+	v1.GET("/jessica", handler.SecondHandler)
+	v1.GET("/students/:id/:name", handler.StudentsHandler)
+	v1.GET("/query", handler.QueryHandler)
+	v1.POST("/students/post/old", handler.StudentsPostHandlerOld)
+	v1.POST("/students/post", handler.StudentsPostHandler)
 
 	router.Run("localhost:8080")
 }
 
-func rootHandler(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{
-		"name": "Ivan Budianto",
-		"desc": "Machine Learning Engineer",
-	})
-}
+func connectDB() {
 
-func secondHandler(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{
-		"name":  "Jessica Maya",
-		"hobby": "Making new things!",
-	})
-}
-
-func studentsHandler(context *gin.Context) {
-	id := context.Param("id")
-	name := context.Param("name")
-
-	context.JSON(http.StatusOK, gin.H{
-		"id":   id,
-		"name": name,
-	})
-}
-
-func queryHandler(context *gin.Context) {
-	id := context.Query("id")
-	name := context.Query("name")
-
-	context.JSON(http.StatusOK, gin.H{
-		"id":   id,
-		"name": name,
-	})
-}
-
-type StudentInput struct {
-	ID    string      `json:"id" binding:"required"`
-	Name  string      `json:"name" binding:"required"`
-	Score json.Number `json:"score" binding:"required,number"`
-}
-
-//CHECK THIS OUT!!!
-
-func studentsPostHandler(context *gin.Context) {
-	var studentInput StudentInput
-
-	//ERROR: KALO NUMBER DIINPUT STRING, RESPONSENYA 500. MAUNYA 400 + RESPONSE ERROR MESSAGENYA.
-
-	errors := context.ShouldBindJSON(&studentInput)
-	if errors != nil {
-		for _, err := range errors.(validator.ValidationErrors) {
-			errorMessage := fmt.Sprintf("Error on field: %s, condition: %s", err.Field(), err.ActualTag())
-			context.JSON(http.StatusBadRequest, errorMessage)
-			return
-		}
-	}
-
-	context.JSON(http.StatusOK, gin.H{
-		"id":    studentInput.ID,
-		"name":  studentInput.Name,
-		"score": studentInput.Score,
-	})
 }
