@@ -8,10 +8,18 @@ import (
 	"net/http"
 )
 
-func StudentsPostHandlerOld(context *gin.Context) {
-	var studentInput student.StudentInput
+type studentHandler struct {
+	studentService student.Service
+}
 
-	err := context.ShouldBindJSON(&studentInput)
+func NewStudentHandler(studentService student.Service) *studentHandler {
+	return &studentHandler{studentService}
+}
+
+func (handler *studentHandler) StudentPostHandler(context *gin.Context) {
+	var studentRequest student.StudentRequest
+
+	err := context.ShouldBindJSON(&studentRequest)
 	if err != nil {
 		var errorMessages []string
 
@@ -27,9 +35,15 @@ func StudentsPostHandlerOld(context *gin.Context) {
 		return
 	}
 
+	student, errorPost := handler.studentService.Create(studentRequest)
+
+	if errorPost != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"errors": err,
+		})
+	}
+
 	context.JSON(http.StatusOK, gin.H{
-		"id":    studentInput.ID,
-		"name":  studentInput.Name,
-		"score": studentInput.Score,
+		"data": student,
 	})
 }

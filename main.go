@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"golangFirstAPI/handler"
+	"golangFirstAPI/handler/studentHandlerBase"
 	"golangFirstAPI/student"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -20,15 +21,22 @@ func main() {
 
 	db.AutoMigrate(&student.Student{})
 
+	studentRepository := student.NewRepository(db)
+	studentService := student.NewService(studentRepository)
+	studentHandler := handler.NewStudentHandler(studentService)
+
 	router := gin.Default()
 
 	v1 := router.Group("/v1")
-	v1.GET("/", handler.RootHandler)
-	v1.GET("/jessica", handler.SecondHandler)
-	v1.GET("/students/:id/:name", handler.StudentsHandler)
-	v1.GET("/query", handler.QueryHandler)
-	v1.POST("/students/post/old", handler.StudentsPostHandlerOld)
-	v1.POST("/students/post", handler.StudentsPostHandler)
+
+	//SIMPLE CRUD
+	v1.POST("/students/simple/post", studentHandlerBase.StudentsPostHandler)
+	v1.GET("/students/simple/index", studentHandlerBase.StudentsIndexHandler)
+	v1.POST("/students/simple/update/:id", studentHandlerBase.StudentsUpdateHandler)
+	v1.POST("/students/simple/destroy/:id", studentHandlerBase.StudentsDestroyHandler)
+
+	//Create WITH HANDLER (Updating Soon!)
+	v1.POST("/students/create", studentHandler.StudentPostHandler)
 
 	router.Run("localhost:8080")
 }
