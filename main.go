@@ -36,11 +36,11 @@ func main() {
 	v1.POST("/students/simple/destroy/:id", studentHandlerBase.StudentsDestroyHandler)
 
 	//Create WITH HANDLER (Updating Soon!)
+	v1.GET("/students", studentHandler.StudentIndexHandler)
+	v1.GET("/students/show/:id", studentHandler.StudentShowHandler)
 	v1.POST("/students/create", studentHandler.StudentPostHandler)
+	v1.PUT("/students/update/:id", studentHandler.StudentUpdateHandler)
+	v1.DELETE("/students/delete/:id", studentHandler.StudentDeleteHandler)
 
 	router.Run("localhost:8080")
-}
-
-func connectDB() {
-
 }

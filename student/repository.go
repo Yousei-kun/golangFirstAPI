@@ -6,6 +6,8 @@ type Repository interface {
 	FindAll() ([]Student, error)
 	FindByID(ID int) (Student, error)
 	Create(student Student) (Student, error)
+	Update(student Student) (Student, error)
+	Delete(student Student) (Student, error)
 }
 
 type repository struct {
@@ -18,7 +20,7 @@ func NewRepository(db *gorm.DB) *repository {
 
 func (repo *repository) FindAll() ([]Student, error) {
 	var students []Student
-	errorFindAll := repo.db.Find(&students).Error
+	errorFindAll := repo.db.Order("ID").Find(&students).Error
 
 	return students, errorFindAll
 }
@@ -34,4 +36,16 @@ func (repo *repository) Create(student Student) (Student, error) {
 	errorCreate := repo.db.Create(&student).Error
 
 	return student, errorCreate
+}
+
+func (repo *repository) Update(student Student) (Student, error) {
+	errorUpdate := repo.db.Save(&student).Error
+
+	return student, errorUpdate
+}
+
+func (repo *repository) Delete(student Student) (Student, error) {
+	errorDelete := repo.db.Delete(&student).Error
+
+	return student, errorDelete
 }
